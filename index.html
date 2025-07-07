@@ -22,8 +22,12 @@
     <input id="embedTitle" type="text" placeholder="Embed Title"
       class="w-full p-2 border rounded mb-3" />
 
-    <textarea id="embedDescription" placeholder="Embed Description"
-      class="w-full p-2 border rounded mb-3 h-24"></textarea>
+    <div id="descriptionsContainer" class="mb-4">
+      <h2 class="text-lg font-semibold mb-2">Embed Descriptions</h2>
+    </div>
+
+    <button onclick="addDescription()"
+      class="w-full bg-indigo-600 text-white p-2 rounded mb-4 hover:bg-indigo-700">+ Add Description</button>
 
     <input id="embedColor" type="color" class="mb-3" value="#5865F2" />
 
@@ -45,7 +49,6 @@
 
     <div id="fieldsContainer" class="mb-4">
       <h2 class="text-lg font-semibold mb-2">Embed Fields</h2>
-      <!-- Dynamic fields will appear here -->
     </div>
 
     <button onclick="addField()"
@@ -81,13 +84,27 @@
       container.appendChild(fieldDiv);
     }
 
+    function addDescription(text = '') {
+      const container = document.getElementById("descriptionsContainer");
+      const div = document.createElement("div");
+      div.className = "relative mb-2";
+      div.innerHTML = `
+        <textarea class="w-full p-2 border rounded h-20 resize-y mb-1" placeholder="Description">${text}</textarea>
+        <button onclick="this.parentElement.remove()" class="absolute top-1 right-1 bg-red-500 text-white rounded px-2 py-0.5 text-xs">✕</button>
+      `;
+      container.appendChild(div);
+    }
+
     function sendEmbed() {
       const webhookUrl = document.getElementById("webhookUrl").value.trim();
       const username = document.getElementById("botUsername").value.trim();
       const avatarUrl = document.getElementById("botAvatarUrl").value.trim();
 
       const title = document.getElementById("embedTitle").value;
-      const description = document.getElementById("embedDescription").value;
+      const descriptionTexts = Array.from(document.querySelectorAll("#descriptionsContainer textarea"))
+        .map(el => el.value.trim())
+        .filter(text => text);
+      const description = descriptionTexts.join("\n\n");
       const color = document.getElementById("embedColor").value.replace('#', '0x');
       const thumbnail = document.getElementById("thumbnailUrl").value;
       const authorName = document.getElementById("authorName").value;
@@ -139,11 +156,14 @@
         return { name: inputs[0].value, value: inputs[1].value };
       });
 
+      const descriptions = Array.from(document.querySelectorAll("#descriptionsContainer textarea"))
+        .map(el => el.value);
+
       const embedData = {
         username: document.getElementById("botUsername").value,
         avatarUrl: document.getElementById("botAvatarUrl").value,
         title: document.getElementById("embedTitle").value,
-        description: document.getElementById("embedDescription").value,
+        descriptions: descriptions,
         color: document.getElementById("embedColor").value,
         thumbnail: document.getElementById("thumbnailUrl").value,
         authorName: document.getElementById("authorName").value,
@@ -180,7 +200,6 @@
       document.getElementById("botUsername").value = data.username || "";
       document.getElementById("botAvatarUrl").value = data.avatarUrl || "";
       document.getElementById("embedTitle").value = data.title;
-      document.getElementById("embedDescription").value = data.description;
       document.getElementById("embedColor").value = data.color;
       document.getElementById("thumbnailUrl").value = data.thumbnail;
       document.getElementById("authorName").value = data.authorName;
@@ -190,6 +209,9 @@
 
       document.getElementById("fieldsContainer").innerHTML = "";
       (data.fields || []).forEach(f => addField(f.name, f.value));
+
+      document.getElementById("descriptionsContainer").innerHTML = "";
+      (data.descriptions || [""]).forEach(desc => addDescription(desc));
     }
 
     function deleteSelectedEmbed() {
