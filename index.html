@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced Discord Embed Sender</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+  <div class="max-w-2xl mx-auto bg-white p-6 rounded-2xl shadow">
+    <h1 class="text-2xl font-bold text-center mb-4">Discord Embed Sender</h1>
+
+    <input id="webhookUrl" type="text" placeholder="Webhook URL"
+      class="w-full p-2 border rounded mb-3" />
+
+    <input id="embedTitle" type="text" placeholder="Embed Title"
+      class="w-full p-2 border rounded mb-3" />
+
+    <textarea id="embedDescription" placeholder="Embed Description"
+      class="w-full p-2 border rounded mb-3 h-24"></textarea>
+
+    <input id="embedColor" type="color" class="mb-3" value="#5865F2" />
+
+    <input id="thumbnailUrl" type="text" placeholder="Thumbnail URL"
+      class="w-full p-2 border rounded mb-3" />
+
+    <input id="authorName" type="text" placeholder="Author Name"
+      class="w-full p-2 border rounded mb-3" />
+
+    <input id="authorIcon" type="text" placeholder="Author Icon URL"
+      class="w-full p-2 border rounded mb-3" />
+
+    <input id="footerText" type="text" placeholder="Footer Text"
+      class="w-full p-2 border rounded mb-3" />
+
+    <label class="flex items-center mb-3">
+      <input id="includeTimestamp" type="checkbox" class="mr-2" /> Include Timestamp
+    </label>
+
+    <div class="flex space-x-2 mb-4">
+      <button onclick="sendEmbed()"
+        class="flex-1 bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Send</button>
+      <button onclick="saveCurrentEmbed()"
+        class="flex-1 bg-green-600 text-white p-2 rounded hover:bg-green-700">Save</button>
+    </div>
+
+    <select id="savedEmbeds" class="w-full p-2 border rounded mb-2" onchange="loadSelectedEmbed()">
+      <option value="">-- Load Saved Embed --</option>
+    </select>
+
+    <button onclick="deleteSelectedEmbed()"
+      class="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700">Delete Selected</button>
+
+    <p id="status" class="text-center mt-4 text-sm text-gray-600"></p>
+  </div>
+
+  <script>
+    function sendEmbed() {
+      const webhookUrl = document.getElementById("webhookUrl").value.trim();
+      const title = document.getElementById("embedTitle").value;
+      const description = document.getElementById("embedDescription").value;
+      const color = document.getElementById("embedColor").value.replace('#', '0x');
+      const thumbnail = document.getElementById("thumbnailUrl").value;
+      const authorName = document.getElementById("authorName").value;
+      const authorIcon = document.getElementById("authorIcon").value;
+      const footerText = document.getElementById("footerText").value;
+      const includeTimestamp = document.getElementById("includeTimestamp").checked;
+
+      const embed = {
+        title: title,
+        description: description,
+        color: parseInt(color),
+        ...(thumbnail && { thumbnail: { url: thumbnail } }),
+        ...(authorName && { author: { name: authorName, icon_url: authorIcon || undefined } }),
+        ...(footerText && { footer: { text: footerText } }),
+        ...(includeTimestamp && { timestamp: new Date().toISOString() })
+      };
+
+      fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ embeds: [embed] })
+      })
+      .then(res => {
+        document.getElementById("status").innerText = res.ok ? "✅ Embed sent!" : "❌ Failed to send.";
+      })
+      .catch(err => {
+        document.getElementById("status").innerText = "❌ Error: " + err.message;
+      });
+    }
+
+    function saveCurrentEmbed() {
+      const name = prompt("Name this embed:");
+      if (!name) return;
+
+      const embedData = {
+        title: document.getElementById("embedTitle").value,
+        description: document.getElementById("embedDescription").value,
+        color: document.getElementById("embedColor").value,
+        thumbnail: document.getElementById("thumbnailUrl").value,
+        authorName: document.getElementById("authorName").value,
+        authorIcon: document.getElementById("authorIcon").value,
+        footerText: document.getElementById("footerText").value,
+        timestamp: document.getElementById("includeTimestamp").checked
+      };
+
+      const saved = JSON.parse(localStorage.getItem("savedEmbeds") || "{}");
+      saved[name] = embedData;
+      localStorage.setItem("savedEmbeds", JSON.stringify(saved));
+      loadSavedEmbeds();
+    }
+
+    function loadSavedEmbeds() {
+      const select = document.getElementById("savedEmbeds");
+      select.innerHTML = '<option value="">-- Load Saved Embed --</option>';
+      const saved = JSON.parse(localStorage.getItem("savedEmbeds") || "{}");
+      for (const name in saved) {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      }
+    }
+
+    function loadSelectedEmbed() {
+      const name = document.getElementById("savedEmbeds").value;
+      if (!name) return;
+      const saved = JSON.parse(localStorage.getItem("savedEmbeds") || "{}");
+      const data = saved[name];
+      if (!data) return;
+      document.getElementById("embedTitle").value = data.title;
+      document.getElementById("embedDescription").value = data.description;
+      document.getElementById("embedColor").value = data.color;
+      document.getElementById("thumbnailUrl").value = data.thumbnail;
+      document.getElementById("authorName").value = data.authorName;
+      document.getElementById("authorIcon").value = data.authorIcon;
+      document.getElementById("footerText").value = data.footerText;
+      document.getElementById("includeTimestamp").checked = data.timestamp;
+    }
+
+    function deleteSelectedEmbed() {
+      const name = document.getElementById("savedEmbeds").value;
+      if (!name) return;
+      if (!confirm(`Delete embed "${name}"?`)) return;
+      const saved = JSON.parse(localStorage.getItem("savedEmbeds") || "{}");
+      delete saved[name];
+      localStorage.setItem("savedEmbeds", JSON.stringify(saved));
+      loadSavedEmbeds();
+    }
+
+    // Load saved on page load
+    window.onload = loadSavedEmbeds;
+  </script>
+</body>
+</html>
