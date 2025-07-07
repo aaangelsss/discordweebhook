@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Angels Embed Sender</title>
+  <title>Modern Discord Embed Sender</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script>
@@ -186,10 +186,51 @@
     }
     
     .preview-image {
-      max-width: 80px;
-      max-height: 80px;
+      max-width: 100%;
       border-radius: 4px;
       margin-top: 12px;
+    }
+    
+    .description-container {
+      position: relative;
+      margin-bottom: 15px;
+    }
+    
+    .description-toolbar {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
+    }
+    
+    .toolbar-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      background: rgba(30, 41, 59, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .toolbar-btn:hover {
+      background: #5865F2;
+    }
+    
+    .image-url-container {
+      margin-top: 10px;
+      display: none;
+    }
+    
+    .image-preview {
+      max-width: 100%;
+      max-height: 150px;
+      margin-top: 10px;
+      border-radius: 4px;
+      display: none;
     }
   </style>
 </head>
@@ -198,7 +239,7 @@
     <div class="flex items-center justify-between mb-8">
       <div>
         <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-500">
-          <i class="fab fa-discord mr-3"></i>Angels Embed Sender
+          <i class="fab fa-discord mr-3"></i>Discord Embed Sender
         </h1>
         <p class="text-slate-400 mt-1">Create and send beautiful Discord embeds</p>
       </div>
@@ -301,6 +342,14 @@
                   class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" 
                   oninput="updatePreview()"/>
               </div>
+            </div>
+            
+            <!-- Main Image URL Input -->
+            <div>
+              <label class="block text-sm font-medium mb-1 text-slate-300">Main Image URL</label>
+              <input id="mainImageUrl" type="text" placeholder="URL for image at top of embed"
+                class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" 
+                oninput="updatePreview()"/>
             </div>
           </div>
         </div>
@@ -431,20 +480,65 @@
       });
     });
 
-    function addDescription(text = '') {
+    function addDescription(text = '', imageUrl = '') {
       const container = document.getElementById("descriptionsContainer");
       const div = document.createElement("div");
-      div.className = "relative";
+      div.className = "description-container";
       div.innerHTML = `
-        <textarea class="input-field w-full p-3 rounded-lg h-24 resize-none mb-1 text-slate-200" 
-                  placeholder="Enter description text..."
-                  oninput="updatePreview()">${text}</textarea>
-        <button onclick="this.parentElement.remove(); updatePreview();" 
-                class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
-          <i class="fas fa-times"></i>
-        </button>
+        <div class="relative">
+          <textarea class="input-field w-full p-3 rounded-lg h-24 resize-none mb-1 text-slate-200" 
+                    placeholder="Enter description text..."
+                    oninput="updatePreview()">${text}</textarea>
+          <div class="description-toolbar">
+            <div class="toolbar-btn" onclick="toggleImageInput(this)">
+              <i class="fas fa-image text-xs"></i>
+            </div>
+            <button onclick="this.closest('.description-container').remove(); updatePreview();" 
+                    class="toolbar-btn">
+              <i class="fas fa-times text-xs"></i>
+            </button>
+          </div>
+        </div>
+        <div class="image-url-container">
+          <label class="block text-sm font-medium mb-1 text-slate-300">Image URL</label>
+          <input type="text" placeholder="https://example.com/image.jpg" 
+                 class="input-field w-full p-2 rounded-lg text-slate-200 placeholder-slate-500"
+                 value="${imageUrl}" oninput="updateImagePreview(this)" />
+          <img src="${imageUrl}" class="image-preview" onerror="this.style.display='none'" />
+        </div>
       `;
       container.appendChild(div);
+      
+      // Show image input if URL was provided
+      if (imageUrl) {
+        const container = div.querySelector('.image-url-container');
+        container.style.display = 'block';
+        const img = div.querySelector('.image-preview');
+        if (imageUrl) {
+          img.style.display = 'block';
+        }
+      }
+    }
+
+    function toggleImageInput(button) {
+      const container = button.closest('.description-container');
+      const imageContainer = container.querySelector('.image-url-container');
+      imageContainer.style.display = imageContainer.style.display === 'block' ? 'none' : 'block';
+      updatePreview();
+    }
+    
+    function updateImagePreview(input) {
+      const url = input.value.trim();
+      const container = input.closest('.description-container');
+      const img = container.querySelector('.image-preview');
+      
+      if (url) {
+        img.src = url;
+        img.style.display = 'block';
+      } else {
+        img.style.display = 'none';
+      }
+      updatePreview();
     }
 
     function addField(name = '', value = '') {
@@ -492,16 +586,26 @@
       const username = document.getElementById("botUsername").value.trim();
       const avatarUrl = document.getElementById("botAvatarUrl").value.trim();
       const title = document.getElementById("embedTitle").value;
-      const descriptionTexts = Array.from(document.querySelectorAll("#descriptionsContainer textarea"))
-        .map(el => el.value.trim())
-        .filter(text => text);
-      const description = descriptionTexts.join("\n\n");
+      
+      // Process descriptions with optional images
+      const descriptionItems = Array.from(document.querySelectorAll("#descriptionsContainer .description-container")).map(container => {
+        const textarea = container.querySelector("textarea");
+        const imageInput = container.querySelector(".image-url-container input");
+        const text = textarea.value.trim();
+        const imageUrl = imageInput ? imageInput.value.trim() : '';
+        return { text, imageUrl };
+      });
+      
+      // Build description text
+      const description = descriptionItems.map(item => item.text).filter(text => text).join("\n\n");
+      
       const color = document.getElementById("embedColor").value.replace('#', '0x');
       const thumbnail = document.getElementById("thumbnailUrl").value;
       const authorName = document.getElementById("authorName").value;
       const authorIcon = document.getElementById("authorIcon").value;
       const footerText = document.getElementById("footerText").value;
       const includeTimestamp = document.getElementById("includeTimestamp").checked;
+      const mainImageUrl = document.getElementById("mainImageUrl").value;
 
       const fields = Array.from(document.querySelectorAll("#fieldsContainer > div")).map(div => {
         const inputs = div.querySelectorAll("input");
@@ -513,6 +617,7 @@
         description: description,
         color: parseInt(color),
         ...(thumbnail && { thumbnail: { url: thumbnail } }),
+        ...(mainImageUrl && { image: { url: mainImageUrl } }),
         ...(authorName && { author: { name: authorName, icon_url: authorIcon || undefined } }),
         ...(footerText && { footer: { text: footerText } }),
         ...(includeTimestamp && { timestamp: new Date().toISOString() }),
@@ -573,21 +678,29 @@
       const name = prompt("Name this embed:");
       if (!name) return;
       
+      // Process descriptions with images
+      const descriptionItems = Array.from(document.querySelectorAll("#descriptionsContainer .description-container")).map(container => {
+        const textarea = container.querySelector("textarea");
+        const imageInput = container.querySelector(".image-url-container input");
+        return {
+          text: textarea.value,
+          imageUrl: imageInput ? imageInput.value : ''
+        };
+      });
+
       const fields = Array.from(document.querySelectorAll("#fieldsContainer > div")).map(div => {
         const inputs = div.querySelectorAll("input");
         return { name: inputs[0].value, value: inputs[1].value };
       });
 
-      const descriptions = Array.from(document.querySelectorAll("#descriptionsContainer textarea"))
-        .map(el => el.value);
-
       const embedData = {
         username: document.getElementById("botUsername").value,
         avatarUrl: document.getElementById("botAvatarUrl").value,
         title: document.getElementById("embedTitle").value,
-        descriptions: descriptions,
+        descriptions: descriptionItems,
         color: document.getElementById("embedColor").value,
         thumbnail: document.getElementById("thumbnailUrl").value,
+        mainImage: document.getElementById("mainImageUrl").value,
         authorName: document.getElementById("authorName").value,
         authorIcon: document.getElementById("authorIcon").value,
         footerText: document.getElementById("footerText").value,
@@ -611,6 +724,7 @@
       document.getElementById("embedColor").value = "#5865F2";
       document.getElementById('colorPreview').style.backgroundColor = "#5865F2";
       document.getElementById("thumbnailUrl").value = "";
+      document.getElementById("mainImageUrl").value = "";
       document.getElementById("authorName").value = "";
       document.getElementById("authorIcon").value = "";
       document.getElementById("footerText").value = "";
@@ -650,6 +764,7 @@
       document.getElementById("embedColor").value = data.color || "#5865F2";
       document.getElementById('colorPreview').style.backgroundColor = data.color || "#5865F2";
       document.getElementById("thumbnailUrl").value = data.thumbnail || "";
+      document.getElementById("mainImageUrl").value = data.mainImage || "";
       document.getElementById("authorName").value = data.authorName || "";
       document.getElementById("authorIcon").value = data.authorIcon || "";
       document.getElementById("footerText").value = data.footerText || "";
@@ -657,7 +772,9 @@
 
       // Clear and add descriptions
       document.getElementById("descriptionsContainer").innerHTML = "";
-      (data.descriptions || [""]).forEach(desc => addDescription(desc));
+      (data.descriptions || [{text: '', imageUrl: ''}]).forEach(desc => 
+        addDescription(desc.text, desc.imageUrl)
+      );
 
       // Clear and add fields
       document.getElementById("fieldsContainer").innerHTML = "";
@@ -688,12 +805,20 @@
       
       // Get values from form
       const title = document.getElementById("embedTitle").value;
-      const descriptionTexts = Array.from(document.querySelectorAll("#descriptionsContainer textarea"))
-        .map(el => el.value.trim())
-        .filter(text => text);
-      const description = descriptionTexts.join("\n\n");
+      
+      // Process descriptions with images
+      const descriptionItems = Array.from(document.querySelectorAll("#descriptionsContainer .description-container")).map(container => {
+        const textarea = container.querySelector("textarea");
+        const imageInput = container.querySelector(".image-url-container input");
+        return {
+          text: textarea.value.trim(),
+          imageUrl: imageInput ? imageInput.value.trim() : ''
+        };
+      });
+      
       const color = document.getElementById("embedColor").value;
       const thumbnail = document.getElementById("thumbnailUrl").value;
+      const mainImage = document.getElementById("mainImageUrl").value;
       const authorName = document.getElementById("authorName").value;
       const authorIcon = document.getElementById("authorIcon").value;
       const footerText = document.getElementById("footerText").value;
@@ -722,10 +847,20 @@
         previewHTML += `<div class="preview-title">${title}</div>`;
       }
       
-      // Description
-      if (description) {
-        previewHTML += `<div class="preview-description">${description.replace(/\n/g, '<br>')}</div>`;
+      // Main image
+      if (mainImage) {
+        previewHTML += `<img src="${mainImage}" class="preview-image" />`;
       }
+      
+      // Description sections with optional images
+      descriptionItems.forEach(item => {
+        if (item.text) {
+          previewHTML += `<div class="preview-description">${item.text.replace(/\n/g, '<br>')}</div>`;
+        }
+        if (item.imageUrl) {
+          previewHTML += `<img src="${item.imageUrl}" class="preview-image" />`;
+        }
+      });
       
       // Fields
       if (fields.length > 0) {
