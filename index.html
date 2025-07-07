@@ -137,6 +137,60 @@
       padding: 2px 6px;
       font-size: 0.75rem;
     }
+    
+    .preview-author {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .preview-author-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      margin-right: 8px;
+      background-color: #4f545c;
+    }
+    
+    .preview-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    
+    .preview-description {
+      color: #dcddde;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    
+    .preview-field {
+      margin-bottom: 8px;
+    }
+    
+    .preview-field-name {
+      font-weight: 600;
+      color: #fff;
+    }
+    
+    .preview-field-value {
+      color: #dcddde;
+    }
+    
+    .preview-footer {
+      color: #72767d;
+      font-size: 0.75rem;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(79,84,92,0.48);
+    }
+    
+    .preview-image {
+      max-width: 80px;
+      max-height: 80px;
+      border-radius: 4px;
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body class="min-h-screen p-4 flex items-center justify-center">
@@ -201,7 +255,8 @@
             <div>
               <label class="block text-sm font-medium mb-1 text-slate-300">Embed Title</label>
               <input id="embedTitle" type="text" placeholder="Your embed title here..."
-                class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" />
+                class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" 
+                oninput="updatePreview()"/>
             </div>
             
             <div>
@@ -228,20 +283,23 @@
           <div class="space-y-4">
             <div class="flex items-center">
               <label class="block text-sm font-medium mr-4 text-slate-300">Accent Color</label>
-              <input id="embedColor" type="color" class="w-10 h-10 rounded-lg border-0 cursor-pointer" value="#5865F2" />
-              <div class="ml-2 color-preview"></div>
+              <input id="embedColor" type="color" class="w-10 h-10 rounded-lg border-0 cursor-pointer" 
+                     value="#5865F2" oninput="updateColorPreview()" />
+              <div id="colorPreview" class="ml-2 color-preview"></div>
             </div>
             
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium mb-1 text-slate-300">Thumbnail URL</label>
                 <input id="thumbnailUrl" type="text" placeholder="Optional"
-                  class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" />
+                  class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" 
+                  oninput="updatePreview()"/>
               </div>
               <div>
                 <label class="block text-sm font-medium mb-1 text-slate-300">Author Icon URL</label>
                 <input id="authorIcon" type="text" placeholder="Optional"
-                  class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" />
+                  class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" 
+                  oninput="updatePreview()"/>
               </div>
             </div>
           </div>
@@ -263,17 +321,20 @@
             <div>
               <label class="block text-sm font-medium mb-1 text-slate-300">Author Name</label>
               <input id="authorName" type="text" placeholder="Optional"
-                class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" />
+                class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" 
+                oninput="updatePreview()"/>
             </div>
             
             <div>
               <label class="block text-sm font-medium mb-1 text-slate-300">Footer Text</label>
               <input id="footerText" type="text" placeholder="Optional"
-                class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" />
+                class="input-field w-full p-3 rounded-lg text-slate-200 placeholder-slate-500 focus:ring-0" 
+                oninput="updatePreview()"/>
             </div>
             
             <div class="flex items-center">
-              <input id="includeTimestamp" type="checkbox" class="h-4 w-4 text-discord-500 rounded focus:ring-discord-500" />
+              <input id="includeTimestamp" type="checkbox" class="h-4 w-4 text-discord-500 rounded focus:ring-discord-500" 
+                     onchange="updatePreview()"/>
               <label class="ml-2 text-sm text-slate-300">Include current timestamp</label>
             </div>
           </div>
@@ -306,34 +367,8 @@
           </h2>
           
           <div class="preview-card p-4">
-            <div class="flex">
-              <div class="w-1 bg-discord-500 rounded mr-3"></div>
-              <div class="flex-1">
-                <div class="flex items-center mb-3">
-                  <div class="w-8 h-8 rounded-full bg-slate-600 mr-2"></div>
-                  <div class="h-4 bg-slate-600 rounded w-32"></div>
-                </div>
-                <div class="h-5 bg-slate-700 rounded w-3/4 mb-3"></div>
-                <div class="space-y-2">
-                  <div class="h-3 bg-slate-700 rounded w-full"></div>
-                  <div class="h-3 bg-slate-700 rounded w-5/6"></div>
-                  <div class="h-3 bg-slate-700 rounded w-4/5"></div>
-                </div>
-                <div class="flex mt-4">
-                  <div class="mr-4">
-                    <div class="h-3 bg-slate-600 rounded w-16 mb-1"></div>
-                    <div class="h-3 bg-slate-700 rounded w-24"></div>
-                  </div>
-                  <div>
-                    <div class="h-3 bg-slate-600 rounded w-16 mb-1"></div>
-                    <div class="h-3 bg-slate-700 rounded w-24"></div>
-                  </div>
-                </div>
-                <div class="flex justify-between items-center mt-4 pt-3 border-t border-slate-700">
-                  <div class="h-3 bg-slate-700 rounded w-20"></div>
-                  <div class="h-3 bg-slate-700 rounded w-24"></div>
-                </div>
-              </div>
+            <div id="embedPreview">
+              <!-- Preview will be dynamically generated here -->
             </div>
           </div>
         </div>
@@ -374,8 +409,8 @@
       </div>
     </div>
     
-    <div id="status" class="text-center mt-6 p-3 rounded-lg bg-discord-800/30 text-discord-200 animate-pulse hidden">
-      <i class="fas fa-circle-notch fa-spin mr-2"></i> Sending embed...
+    <div id="status" class="text-center mt-6 p-3 rounded-lg bg-discord-800/30 text-discord-200 hidden">
+      <i class="fas fa-circle-notch fa-spin mr-2"></i> <span id="statusText">Sending embed...</span>
     </div>
   </div>
 
@@ -385,14 +420,14 @@
       addDescription();
       loadSavedEmbeds();
       updateFieldCount();
+      updateColorPreview();
+      updatePreview();
       
-      // Update color preview
-      const colorInput = document.getElementById('embedColor');
-      const colorPreview = document.querySelector('.color-preview');
-      colorPreview.style.backgroundColor = colorInput.value;
-      
-      colorInput.addEventListener('input', function() {
-        colorPreview.style.backgroundColor = this.value;
+      // Add event listeners for dynamic preview
+      document.querySelectorAll('input, textarea').forEach(el => {
+        if (el.id !== 'embedColor') {
+          el.addEventListener('input', updatePreview);
+        }
       });
     });
 
@@ -402,8 +437,9 @@
       div.className = "relative";
       div.innerHTML = `
         <textarea class="input-field w-full p-3 rounded-lg h-24 resize-none mb-1 text-slate-200" 
-                  placeholder="Enter description text...">${text}</textarea>
-        <button onclick="this.parentElement.remove()" 
+                  placeholder="Enter description text..."
+                  oninput="updatePreview()">${text}</textarea>
+        <button onclick="this.parentElement.remove(); updatePreview();" 
                 class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
           <i class="fas fa-times"></i>
         </button>
@@ -418,22 +454,32 @@
       fieldDiv.innerHTML = `
         <div class="flex-1 space-y-1">
           <input type="text" placeholder="Field Name" value="${name}" 
-                 class="input-field w-full p-2.5 rounded-lg text-slate-200 placeholder-slate-500" />
+                 class="input-field w-full p-2.5 rounded-lg text-slate-200 placeholder-slate-500"
+                 oninput="updatePreview()" />
           <input type="text" placeholder="Field Value" value="${value}" 
-                 class="input-field w-full p-2.5 rounded-lg text-slate-200 placeholder-slate-500" />
+                 class="input-field w-full p-2.5 rounded-lg text-slate-200 placeholder-slate-500"
+                 oninput="updatePreview()" />
         </div>
-        <button onclick="this.parentElement.remove(); updateFieldCount();" 
+        <button onclick="this.parentElement.remove(); updateFieldCount(); updatePreview();" 
                 class="mt-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm hover:bg-red-600">
           <i class="fas fa-trash"></i>
         </button>
       `;
       container.appendChild(fieldDiv);
       updateFieldCount();
+      updatePreview();
     }
     
     function updateFieldCount() {
       const count = document.querySelectorAll('#fieldsContainer > div').length;
       document.getElementById('fieldCount').textContent = `${count} field${count !== 1 ? 's' : ''}`;
+    }
+    
+    function updateColorPreview() {
+      const colorInput = document.getElementById('embedColor');
+      const colorPreview = document.getElementById('colorPreview');
+      colorPreview.style.backgroundColor = colorInput.value;
+      updatePreview();
     }
 
     function sendEmbed() {
@@ -443,26 +489,69 @@
         return;
       }
       
+      const username = document.getElementById("botUsername").value.trim();
+      const avatarUrl = document.getElementById("botAvatarUrl").value.trim();
+      const title = document.getElementById("embedTitle").value;
+      const descriptionTexts = Array.from(document.querySelectorAll("#descriptionsContainer textarea"))
+        .map(el => el.value.trim())
+        .filter(text => text);
+      const description = descriptionTexts.join("\n\n");
+      const color = document.getElementById("embedColor").value.replace('#', '0x');
+      const thumbnail = document.getElementById("thumbnailUrl").value;
+      const authorName = document.getElementById("authorName").value;
+      const authorIcon = document.getElementById("authorIcon").value;
+      const footerText = document.getElementById("footerText").value;
+      const includeTimestamp = document.getElementById("includeTimestamp").checked;
+
+      const fields = Array.from(document.querySelectorAll("#fieldsContainer > div")).map(div => {
+        const inputs = div.querySelectorAll("input");
+        return { name: inputs[0].value, value: inputs[1].value, inline: false };
+      }).filter(f => f.name && f.value);
+
+      const embed = {
+        title: title,
+        description: description,
+        color: parseInt(color),
+        ...(thumbnail && { thumbnail: { url: thumbnail } }),
+        ...(authorName && { author: { name: authorName, icon_url: authorIcon || undefined } }),
+        ...(footerText && { footer: { text: footerText } }),
+        ...(includeTimestamp && { timestamp: new Date().toISOString() }),
+        ...(fields.length > 0 && { fields })
+      };
+
+      const payload = {
+        embeds: [embed],
+        ...(username && { username }),
+        ...(avatarUrl && { avatar_url: avatarUrl })
+      };
+
       const status = document.getElementById("status");
+      const statusText = document.getElementById("statusText");
       status.classList.remove('hidden');
-      status.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Sending embed...';
-      
-      setTimeout(() => {
-        // Simulate API call
-        const success = Math.random() > 0.2; // 80% success rate for demo
-        if (success) {
+      statusText.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Sending embed...';
+
+      fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(res => {
+        if (res.ok) {
           showStatus("✅ Embed sent successfully!", "success");
         } else {
-          showStatus("❌ Failed to send embed. Check your webhook URL.", "error");
+          showStatus(`❌ Failed to send: ${res.status} ${res.statusText}`, "error");
         }
-      }, 1500);
+      })
+      .catch(err => {
+        showStatus("❌ Error: " + err.message, "error");
+      });
     }
     
     function showStatus(message, type) {
       const status = document.getElementById("status");
-      status.innerHTML = message;
-      status.classList.remove('animate-pulse');
-      status.classList.remove('bg-discord-800/30');
+      const statusText = document.getElementById("statusText");
+      statusText.innerHTML = message;
+      status.classList.remove('hidden');
       
       if (type === "success") {
         status.classList.add('bg-green-900/30');
@@ -476,10 +565,7 @@
       setTimeout(() => {
         status.classList.add('hidden');
         status.classList.remove('bg-green-900/30', 'bg-red-900/30');
-        status.classList.add('bg-discord-800/30');
-        status.classList.add('animate-pulse');
         status.classList.remove('text-green-400', 'text-red-400');
-        status.classList.add('text-discord-200');
       }, 3000);
     }
 
@@ -487,7 +573,32 @@
       const name = prompt("Name this embed:");
       if (!name) return;
       
-      // In a real implementation, this would save to localStorage
+      const fields = Array.from(document.querySelectorAll("#fieldsContainer > div")).map(div => {
+        const inputs = div.querySelectorAll("input");
+        return { name: inputs[0].value, value: inputs[1].value };
+      });
+
+      const descriptions = Array.from(document.querySelectorAll("#descriptionsContainer textarea"))
+        .map(el => el.value);
+
+      const embedData = {
+        username: document.getElementById("botUsername").value,
+        avatarUrl: document.getElementById("botAvatarUrl").value,
+        title: document.getElementById("embedTitle").value,
+        descriptions: descriptions,
+        color: document.getElementById("embedColor").value,
+        thumbnail: document.getElementById("thumbnailUrl").value,
+        authorName: document.getElementById("authorName").value,
+        authorIcon: document.getElementById("authorIcon").value,
+        footerText: document.getElementById("footerText").value,
+        timestamp: document.getElementById("includeTimestamp").checked,
+        fields: fields
+      };
+
+      const saved = JSON.parse(localStorage.getItem("savedEmbeds") || "{}");
+      saved[name] = embedData;
+      localStorage.setItem("savedEmbeds", JSON.stringify(saved));
+      loadSavedEmbeds();
       showStatus(`💾 Embed "${name}" saved successfully!`, "success");
     }
 
@@ -498,7 +609,7 @@
       document.getElementById("embedTitle").value = "";
       document.getElementById("descriptionsContainer").innerHTML = "";
       document.getElementById("embedColor").value = "#5865F2";
-      document.querySelector('.color-preview').style.backgroundColor = "#5865F2";
+      document.getElementById('colorPreview').style.backgroundColor = "#5865F2";
       document.getElementById("thumbnailUrl").value = "";
       document.getElementById("authorName").value = "";
       document.getElementById("authorIcon").value = "";
@@ -511,62 +622,151 @@
       addDescription();
       
       showStatus("🔄 Form has been reset", "success");
+      updatePreview();
     }
 
     function loadSavedEmbeds() {
-      // In a real implementation, this would load from localStorage
       const select = document.getElementById("savedEmbeds");
       select.innerHTML = '<option value="">-- Select a saved embed --</option>';
-      
-      // Demo saved embeds
-      const demoSaved = [
-        {name: "Welcome Message", color: "#3BA55D"},
-        {name: "Announcement", color: "#5865F2"},
-        {name: "Server Rules", color: "#ED4245"}
-      ];
-      
-      demoSaved.forEach(embed => {
-        const option = document.createElement("option");
-        option.value = embed.name;
-        option.textContent = embed.name;
-        option.style.color = embed.color;
-        select.appendChild(option);
-      });
+      const saved = JSON.parse(localStorage.getItem("savedEmbeds") || "{}");
+      for (const name in saved) {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      }
     }
 
     function loadSelectedEmbed() {
-      const selected = document.getElementById("savedEmbeds").value;
-      if (!selected) return;
+      const name = document.getElementById("savedEmbeds").value;
+      if (!name) return;
+      const saved = JSON.parse(localStorage.getItem("savedEmbeds") || "{}");
+      const data = saved[name];
+      if (!data) return;
       
-      // In a real implementation, this would load actual data
-      // For demo, we'll just fill with sample data
-      document.getElementById("embedTitle").value = `${selected} Embed`;
+      document.getElementById("botUsername").value = data.username || "";
+      document.getElementById("botAvatarUrl").value = data.avatarUrl || "";
+      document.getElementById("embedTitle").value = data.title || "";
+      document.getElementById("embedColor").value = data.color || "#5865F2";
+      document.getElementById('colorPreview').style.backgroundColor = data.color || "#5865F2";
+      document.getElementById("thumbnailUrl").value = data.thumbnail || "";
+      document.getElementById("authorName").value = data.authorName || "";
+      document.getElementById("authorIcon").value = data.authorIcon || "";
+      document.getElementById("footerText").value = data.footerText || "";
+      document.getElementById("includeTimestamp").checked = data.timestamp || false;
+
+      // Clear and add descriptions
       document.getElementById("descriptionsContainer").innerHTML = "";
-      addDescription(`This is a sample ${selected.toLowerCase()} embed. You can customize it as needed.`);
-      document.getElementById("footerText").value = "Sent via Embed Sender";
+      (data.descriptions || [""]).forEach(desc => addDescription(desc));
+
+      // Clear and add fields
+      document.getElementById("fieldsContainer").innerHTML = "";
+      (data.fields || []).forEach(f => addField(f.name, f.value));
+      updateFieldCount();
+
+      // Update preview
+      updatePreview();
       
-      // Set color based on selection
-      let color = "#5865F2";
-      if (selected === "Welcome Message") color = "#3BA55D";
-      if (selected === "Server Rules") color = "#ED4245";
-      
-      document.getElementById("embedColor").value = color;
-      document.querySelector('.color-preview').style.backgroundColor = color;
-      
-      showStatus(`📥 Loaded "${selected}" template`, "success");
+      showStatus(`📥 Loaded "${name}" embed`, "success");
     }
 
     function deleteSelectedEmbed() {
-      const selected = document.getElementById("savedEmbeds").value;
-      if (!selected) return;
+      const name = document.getElementById("savedEmbeds").value;
+      if (!name) return;
       
-      if (confirm(`Are you sure you want to delete the "${selected}" embed?`)) {
-        // In a real implementation, this would remove from localStorage
-        showStatus(`🗑️ Deleted "${selected}" embed`, "success");
-        
-        // Reset selection
-        document.getElementById("savedEmbeds").value = "";
+      if (confirm(`Are you sure you want to delete the "${name}" embed?`)) {
+        const saved = JSON.parse(localStorage.getItem("savedEmbeds") || "{}");
+        delete saved[name];
+        localStorage.setItem("savedEmbeds", JSON.stringify(saved));
+        loadSavedEmbeds();
+        showStatus(`🗑️ Deleted "${name}" embed`, "success");
       }
+    }
+    
+    function updatePreview() {
+      const previewContainer = document.getElementById("embedPreview");
+      
+      // Get values from form
+      const title = document.getElementById("embedTitle").value;
+      const descriptionTexts = Array.from(document.querySelectorAll("#descriptionsContainer textarea"))
+        .map(el => el.value.trim())
+        .filter(text => text);
+      const description = descriptionTexts.join("\n\n");
+      const color = document.getElementById("embedColor").value;
+      const thumbnail = document.getElementById("thumbnailUrl").value;
+      const authorName = document.getElementById("authorName").value;
+      const authorIcon = document.getElementById("authorIcon").value;
+      const footerText = document.getElementById("footerText").value;
+      const includeTimestamp = document.getElementById("includeTimestamp").checked;
+      
+      const fields = Array.from(document.querySelectorAll("#fieldsContainer > div")).map(div => {
+        const inputs = div.querySelectorAll("input");
+        return { name: inputs[0].value, value: inputs[1].value };
+      }).filter(f => f.name && f.value);
+      
+      // Build preview HTML
+      let previewHTML = '';
+      
+      // Author section
+      if (authorName) {
+        previewHTML += `
+          <div class="preview-author">
+            ${authorIcon ? `<img src="${authorIcon}" class="preview-author-icon" />` : '<div class="preview-author-icon"></div>'}
+            <div class="preview-author-name">${authorName}</div>
+          </div>
+        `;
+      }
+      
+      // Title
+      if (title) {
+        previewHTML += `<div class="preview-title">${title}</div>`;
+      }
+      
+      // Description
+      if (description) {
+        previewHTML += `<div class="preview-description">${description.replace(/\n/g, '<br>')}</div>`;
+      }
+      
+      // Fields
+      if (fields.length > 0) {
+        previewHTML += '<div class="preview-fields">';
+        fields.forEach(field => {
+          previewHTML += `
+            <div class="preview-field">
+              <div class="preview-field-name">${field.name}</div>
+              <div class="preview-field-value">${field.value}</div>
+            </div>
+          `;
+        });
+        previewHTML += '</div>';
+      }
+      
+      // Thumbnail
+      if (thumbnail) {
+        previewHTML += `<img src="${thumbnail}" class="preview-image" />`;
+      }
+      
+      // Footer
+      let footerContent = '';
+      if (footerText) {
+        footerContent += footerText;
+      }
+      if (includeTimestamp) {
+        const now = new Date();
+        footerContent += footerText ? ' • ' : '';
+        footerContent += now.toLocaleString();
+      }
+      
+      if (footerContent) {
+        previewHTML += `<div class="preview-footer">${footerContent}</div>`;
+      }
+      
+      // Set border color to match selected color
+      const previewCard = document.querySelector('.preview-card');
+      previewCard.style.borderLeftColor = color;
+      
+      // Update preview container
+      previewContainer.innerHTML = previewHTML || '<div class="text-slate-500 text-center py-4">Your embed preview will appear here</div>';
     }
   </script>
 </body>
