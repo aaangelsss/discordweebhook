@@ -13,6 +13,12 @@
     <input id="webhookUrl" type="text" placeholder="Webhook URL"
       class="w-full p-2 border rounded mb-3" />
 
+    <input id="botUsername" type="text" placeholder="Bot Username (optional)"
+      class="w-full p-2 border rounded mb-3" />
+
+    <input id="botAvatarUrl" type="text" placeholder="Bot Avatar URL (optional)"
+      class="w-full p-2 border rounded mb-3" />
+
     <input id="embedTitle" type="text" placeholder="Embed Title"
       class="w-full p-2 border rounded mb-3" />
 
@@ -77,6 +83,9 @@
 
     function sendEmbed() {
       const webhookUrl = document.getElementById("webhookUrl").value.trim();
+      const username = document.getElementById("botUsername").value.trim();
+      const avatarUrl = document.getElementById("botAvatarUrl").value.trim();
+
       const title = document.getElementById("embedTitle").value;
       const description = document.getElementById("embedDescription").value;
       const color = document.getElementById("embedColor").value.replace('#', '0x');
@@ -102,10 +111,16 @@
         ...(fields.length > 0 && { fields })
       };
 
+      const payload = {
+        embeds: [embed],
+        ...(username && { username }),
+        ...(avatarUrl && { avatar_url: avatarUrl })
+      };
+
       fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ embeds: [embed] })
+        body: JSON.stringify(payload)
       })
       .then(res => {
         document.getElementById("status").innerText = res.ok ? "✅ Embed sent!" : "❌ Failed to send.";
@@ -125,6 +140,8 @@
       });
 
       const embedData = {
+        username: document.getElementById("botUsername").value,
+        avatarUrl: document.getElementById("botAvatarUrl").value,
         title: document.getElementById("embedTitle").value,
         description: document.getElementById("embedDescription").value,
         color: document.getElementById("embedColor").value,
@@ -160,6 +177,8 @@
       const saved = JSON.parse(localStorage.getItem("savedEmbeds") || "{}");
       const data = saved[name];
       if (!data) return;
+      document.getElementById("botUsername").value = data.username || "";
+      document.getElementById("botAvatarUrl").value = data.avatarUrl || "";
       document.getElementById("embedTitle").value = data.title;
       document.getElementById("embedDescription").value = data.description;
       document.getElementById("embedColor").value = data.color;
