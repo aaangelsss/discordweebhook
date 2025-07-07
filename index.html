@@ -37,6 +37,14 @@
       <input id="includeTimestamp" type="checkbox" class="mr-2" /> Include Timestamp
     </label>
 
+    <div id="fieldsContainer" class="mb-4">
+      <h2 class="text-lg font-semibold mb-2">Embed Fields</h2>
+      <!-- Dynamic fields will appear here -->
+    </div>
+
+    <button onclick="addField()"
+      class="w-full bg-indigo-600 text-white p-2 rounded mb-4 hover:bg-indigo-700">+ Add Field</button>
+
     <div class="flex space-x-2 mb-4">
       <button onclick="sendEmbed()"
         class="flex-1 bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Send</button>
@@ -55,6 +63,18 @@
   </div>
 
   <script>
+    function addField(name = '', value = '') {
+      const container = document.getElementById("fieldsContainer");
+      const fieldDiv = document.createElement("div");
+      fieldDiv.className = "flex mb-2 space-x-2";
+      fieldDiv.innerHTML = `
+        <input type="text" placeholder="Field Name" value="${name}" class="flex-1 p-2 border rounded" />
+        <input type="text" placeholder="Field Value" value="${value}" class="flex-1 p-2 border rounded" />
+        <button onclick="this.parentElement.remove()" class="bg-red-500 text-white px-3 rounded">✕</button>
+      `;
+      container.appendChild(fieldDiv);
+    }
+
     function sendEmbed() {
       const webhookUrl = document.getElementById("webhookUrl").value.trim();
       const title = document.getElementById("embedTitle").value;
@@ -66,6 +86,11 @@
       const footerText = document.getElementById("footerText").value;
       const includeTimestamp = document.getElementById("includeTimestamp").checked;
 
+      const fields = Array.from(document.querySelectorAll("#fieldsContainer > div")).map(div => {
+        const inputs = div.querySelectorAll("input");
+        return { name: inputs[0].value, value: inputs[1].value, inline: false };
+      }).filter(f => f.name && f.value);
+
       const embed = {
         title: title,
         description: description,
@@ -73,7 +98,8 @@
         ...(thumbnail && { thumbnail: { url: thumbnail } }),
         ...(authorName && { author: { name: authorName, icon_url: authorIcon || undefined } }),
         ...(footerText && { footer: { text: footerText } }),
-        ...(includeTimestamp && { timestamp: new Date().toISOString() })
+        ...(includeTimestamp && { timestamp: new Date().toISOString() }),
+        ...(fields.length > 0 && { fields })
       };
 
       fetch(webhookUrl, {
@@ -93,6 +119,11 @@
       const name = prompt("Name this embed:");
       if (!name) return;
 
+      const fields = Array.from(document.querySelectorAll("#fieldsContainer > div")).map(div => {
+        const inputs = div.querySelectorAll("input");
+        return { name: inputs[0].value, value: inputs[1].value };
+      });
+
       const embedData = {
         title: document.getElementById("embedTitle").value,
         description: document.getElementById("embedDescription").value,
@@ -101,7 +132,8 @@
         authorName: document.getElementById("authorName").value,
         authorIcon: document.getElementById("authorIcon").value,
         footerText: document.getElementById("footerText").value,
-        timestamp: document.getElementById("includeTimestamp").checked
+        timestamp: document.getElementById("includeTimestamp").checked,
+        fields: fields
       };
 
       const saved = JSON.parse(localStorage.getItem("savedEmbeds") || "{}");
@@ -136,6 +168,9 @@
       document.getElementById("authorIcon").value = data.authorIcon;
       document.getElementById("footerText").value = data.footerText;
       document.getElementById("includeTimestamp").checked = data.timestamp;
+
+      document.getElementById("fieldsContainer").innerHTML = "";
+      (data.fields || []).forEach(f => addField(f.name, f.value));
     }
 
     function deleteSelectedEmbed() {
